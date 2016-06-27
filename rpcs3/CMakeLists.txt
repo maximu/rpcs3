@@ -125,6 +125,7 @@ ${LLVM_INCLUDE_DIRS}
 "${RPCS3_SRC_DIR}/../rsx_program_decompiler/shader_code"
 "${RPCS3_SRC_DIR}/../Vulkan/Vulkan-LoaderAndValidationLayers/include"
 "${RPCS3_SRC_DIR}/../Vulkan/glslang/glslang/Public"
+"${RPCS3_SRC_DIR}/../Vulkan/glslang/hlsl"
 # Includes 3rdparty stuff that isn't included yet
 "${RPCS3_SRC_DIR}/../3rdparty/GL"
 "${RPCS3_SRC_DIR}/../3rdparty/stblib"
@@ -154,6 +155,7 @@ link_directories(
 
 if(MSVC OR NOT WIN32)
 	link_directories("${RPCS3_SRC_DIR}/../3rdparty/ffmpeg/${PLATFORM_ARCH}/lib")
+        link_directories("${RPCS3_SRC_DIR}/../Vulkan/glslang/hlsl")
 endif()
 
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
@@ -189,7 +191,7 @@ if(MSVC)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /DYNAMICBASE:NO /BASE:0x10000 /FIXED")
 endif()
 if(WIN32)
-	target_link_libraries(rpcs3  ws2_32.lib Winmm.lib VKstatic.1 glslang OSDependent OGLCompiler SPIRV)
+	target_link_libraries(rpcs3  ws2_32.lib Winmm.lib VKstatic.1 glslang OSDependent OGLCompiler HLSL SPIRV)
 	if(NOT MSVC)
 		target_link_libraries(rpcs3  ${OPENGL_LIBRARIES} ${GLEW_LIBRARY} opengl32.lib glu32.lib libpthread)
 	else()
@@ -200,7 +202,7 @@ else()
 	target_link_libraries(rpcs3  ${wxWidgets_LIBRARIES} ${OPENAL_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_LIBRARIES})
 	target_link_libraries(rpcs3  libavformat.a libavcodec.a libavutil.a libswresample.a libswscale.a -ldl png16_static ${ZLIB_LIBRARIES} ${ADDITIONAL_LIBS})
 	if (NOT APPLE)
-		target_link_libraries(rpcs3  vulkan glslang OSDependent OGLCompiler SPIRV)
+		target_link_libraries(rpcs3  vulkan glslang OSDependent OGLCompiler HLSL SPIRV)
 	endif()
 endif()
 if(LLVM_FOUND)
