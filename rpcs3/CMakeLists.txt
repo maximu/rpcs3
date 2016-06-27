@@ -163,7 +163,11 @@ link_directories(
 
 if(MSVC OR NOT WIN32)
 	link_directories("${RPCS3_SRC_DIR}/../3rdparty/ffmpeg/${PLATFORM_ARCH}/lib")
+<<<<<<< HEAD
     link_directories("${RPCS3_SRC_DIR}/../Vulkan/glslang/hlsl")
+=======
+        link_directories("${RPCS3_SRC_DIR}/../Vulkan/glslang/hlsl")
+>>>>>>> 9482dfe203187c2b963095eab5c15a19a3781e23
 endif()
 
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
