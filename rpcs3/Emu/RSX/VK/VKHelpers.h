@@ -1034,7 +1034,11 @@ namespace vk
 			const char *requested_extensions[] =
 			{
 				"VK_KHR_surface",
+#ifdef _WIN32
 				"VK_KHR_win32_surface",
+#elif __unix__
+                "VK_KHR_xlib_surface",
+#endif
 				"VK_EXT_debug_report",
 			};
 
@@ -1196,7 +1200,96 @@ namespace vk
 
 			return new swap_chain(dev, presentQueueNodeIndex, graphicsQueueNodeIndex, format, surface, color_space);
 		}
-#endif	//if _WIN32
+//if _WIN32
+#elif __unix__
+		vk::swap_chain* createSwapChain(Window w, vk::physical_device &dev)
+		{
+			VkXlibSurfaceCreateInfoKHR createInfo = {};
+			createInfo.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
+			//createInfo.hinstance = hInstance;
+			createInfo.window = w;
+
+			VkSurfaceKHR surface;
+			VkResult err = vkCreateXlibSurfaceKHR(m_instance, &createInfo, NULL, &surface);
+
+			uint32_t device_queues = dev.get_queue_count();
+			std::vector<VkBool32> supportsPresent(device_queues);
+
+			for (u32 index = 0; index < device_queues; index++)
+			{
+				vkGetPhysicalDeviceSurfaceSupportKHR(dev, index, surface, &supportsPresent[index]);
+			}
+
+			// Search for a graphics and a present queue in the array of queue
+			// families, try to find one that supports both
+			uint32_t graphicsQueueNodeIndex = UINT32_MAX;
+			uint32_t presentQueueNodeIndex = UINT32_MAX;
+
+			for (u32 i = 0; i < device_queues; i++)
+			{
+				if ((dev.get_queue_properties(i).queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)
+				{
+					if (graphicsQueueNodeIndex == UINT32_MAX)
+						graphicsQueueNodeIndex = i;
+
+					if (supportsPresent[i] == VK_TRUE)
+					{
+						graphicsQueueNodeIndex = i;
+						presentQueueNodeIndex = i;
+
+						break;
+					}
+				}
+			}
+
+			if (presentQueueNodeIndex == UINT32_MAX)
+			{
+				// If didn't find a queue that supports both graphics and present, then
+				// find a separate present queue.
+				for (uint32_t i = 0; i < device_queues; ++i)
+				{
+					if (supportsPresent[i] == VK_TRUE)
+					{
+						presentQueueNodeIndex = i;
+						break;
+					}
+				}
+			}
+
+			// Generate error if could not find both a graphics and a present queue
+			if (graphicsQueueNodeIndex == UINT32_MAX || presentQueueNodeIndex == UINT32_MAX)
+				throw EXCEPTION("Undefined trap");
+
+			if (graphicsQueueNodeIndex != presentQueueNodeIndex)
+				throw EXCEPTION("Undefined trap");
+
+			// Get the list of VkFormat's that are supported:
+			uint32_t formatCount;
+			err = vkGetPhysicalDeviceSurfaceFormatsKHR(dev, surface, &formatCount, nullptr);
+			if (err != VK_SUCCESS) throw EXCEPTION("Undefined trap");
+
+			std::vector<VkSurfaceFormatKHR> surfFormats(formatCount);
+			err = vkGetPhysicalDeviceSurfaceFormatsKHR(dev, surface, &formatCount, surfFormats.data());
+			if (err != VK_SUCCESS) throw EXCEPTION("Undefined trap");
+
+			VkFormat format;
+			VkColorSpaceKHR color_space;
+
+			if (formatCount == 1 && surfFormats[0].format == VK_FORMAT_UNDEFINED)
+			{
+				format = VK_FORMAT_B8G8R8A8_UNORM;
+			}
+			else
+			{
+				if (!formatCount) throw EXCEPTION("Undefined trap");
+				format = surfFormats[0].format;
+			}
+
+			color_space = surfFormats[0].colorSpace;
+
+			return new swap_chain(dev, presentQueueNodeIndex, graphicsQueueNodeIndex, format, surface, color_space);
+		}
+#endif
 
 	};
 

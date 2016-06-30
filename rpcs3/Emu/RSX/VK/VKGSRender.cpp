@@ -6,6 +6,15 @@
 #include "../Common/BufferUtils.h"
 #include "VKFormats.h"
 
+#ifdef __unix__
+
+#ifdef __WXGTK__
+#include <gtk/gtkx.h>
+#include <gdk/gdkx.h>
+#endif
+
+#endif
+
 namespace
 {
 	u32 get_max_depth_value(rsx::surface_depth_format format)
@@ -424,12 +433,17 @@ VKGSRender::VKGSRender() : GSRender(frame_type::Vulkan)
 	m_thread_context.makeCurrentInstance(1);
 	m_thread_context.enable_debugging();
 
+    std::vector<vk::physical_device>& gpus = m_thread_context.enumerateDevices();
+
 #ifdef _WIN32
 	HINSTANCE hInstance = NULL;
 	HWND hWnd = (HWND)m_frame->handle();
 
-	std::vector<vk::physical_device>& gpus = m_thread_context.enumerateDevices();
 	m_swap_chain = m_thread_context.createSwapChain(hInstance, hWnd, gpus[0]);
+#elif __unix__
+ GtkWidget *widget =(GtkWidget*)m_frame->handle();
+ Window w = gdk_x11_window_get_xid(gtk_widget_get_window(widget));
+ m_swap_chain = m_thread_context.createSwapChain(w, gpus[0]);
 #endif
 
 	m_device = (vk::render_device *)(&m_swap_chain->get_device());
