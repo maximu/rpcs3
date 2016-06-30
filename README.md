@@ -25,7 +25,7 @@ __Windows__
 * [Python 3.3+](https://www.python.org/downloads/) (required; add to PATH)
 
 __Linux__
-* GCC 5.1+ or Clang 3.5.0+
+* GCC 5 only or Clang 3.5.0+
 * Debian & Ubuntu: `sudo apt-get install cmake build-essential libopenal-dev libwxgtk3.0-dev libglew-dev zlib1g-dev libedit-dev libvulkan-dev`
 * Arch: `sudo pacman -S glew openal wxgtk cmake llvm`
 
@@ -44,7 +44,7 @@ To initialize the repository don't forget to execute `git submodule update --ini
 3) Press *BUILD* > *Build Solution* or *Rebuild Solution*.
 * __Linux & Mac OSX__:
 If you want to build with LLVM, then LLVM 3.8 is required.
-`cd rpcs3 && cmake CMakeLists.txt && make && cd ../` then run with `cd bin && ./rpcs3`.
+*Compile with GCC I.E path* `cmake -DCMAKE_C_COMPILER="/bin/gcc-5" -DCMAKE_CXX_COMPILER="/bin/g++-5" CMakeLists.txt && make` in the root directory change change */bin/gcc-5* and */bin/g++-5* for you gcc folder compiler.
 If you are on OSX and want to build with llvm don't forget to add `-DLLVM_DIR=...` (or wherever llvm brew was installed) to cmake invocation.
 When using GDB, configure it to ignore SIGSEGV signal (`handle SIGSEGV nostop noprint`).
 
