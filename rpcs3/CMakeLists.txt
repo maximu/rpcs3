@@ -69,6 +69,18 @@ EndIf()
 
 set(CMAKE_MODULE_PATH "${RPCS3_SRC_DIR}/cmake_modules")
 
+# Use the package PkgConfig to detect GTK+ headers/library files
+if(NOT WIN32)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+# Setup CMake to use GTK+, tell the compiler where to look for headers
+# and to the linker where to look for libraries
+include_directories(${GTK3_INCLUDE_DIRS})
+link_directories(${GTK3_LIBRARY_DIRS})
+# Add other flags to the compiler
+add_definitions(${GTK3_CFLAGS_OTHER})
+endif()
+
 if(NOT WIN32)
 	add_definitions(-DGL_GLEXT_PROTOTYPES)
 	add_definitions(-DGLX_GLXEXT_PROTOTYPES)
@@ -201,14 +213,14 @@ endif()
 if(WIN32)
 	target_link_libraries(rpcs3  ws2_32.lib Winmm.lib VKstatic.1 glslang OSDependent OGLCompiler HLSL SPIRV)
 	if(NOT MSVC)
-		target_link_libraries(rpcs3  ${OPENGL_LIBRARIES} ${GLEW_LIBRARY} opengl32.lib glu32.lib libpthread)
+		target_link_libraries(rpcs3 ${wxWidgets_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARY} opengl32.lib glu32.lib libpthread)
 	else()
 		target_link_libraries(rpcs3  dxgi.lib d2d1.lib dwrite.lib)
 	endif()
 	target_link_libraries(rpcs3  avformat.lib avcodec.lib avutil.lib swresample.lib swscale.lib ${PNG_LIBRARIES} ${wxWidgets_LIBRARIES} ${OPENAL_LIBRARY} ${ADDITIONAL_LIBS})
 else()
 	target_link_libraries(rpcs3  ${wxWidgets_LIBRARIES} ${OPENAL_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_LIBRARIES})
-	target_link_libraries(rpcs3  libavformat.a libavcodec.a libavutil.a libswresample.a libswscale.a -ldl ${PNG_LIBRARIES} ${ZLIB_LIBRARIES} ${ADDITIONAL_LIBS})
+	target_link_libraries(rpcs3  libavformat.a libavcodec.a libavutil.a libswresample.a libswscale.a -ldl ${GTK3_LIBRARIES} ${PNG_LIBRARIES} ${ZLIB_LIBRARIES} ${ADDITIONAL_LIBS})
 	if (NOT APPLE)
 		target_link_libraries(rpcs3  vulkan glslang OSDependent OGLCompiler HLSL SPIRV)
 	endif()
